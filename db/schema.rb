@@ -12,26 +12,32 @@
 
 ActiveRecord::Schema.define(version: 2019_11_11_191142) do
 
-  create_table "battles", force: :cascade do |t|
-    t.integer "character_id"
-    t.integer "enemy_id"
-  end
-
   create_table "characters", force: :cascade do |t|
     t.string "name"
     t.integer "hp"
-    t.string "thunderbolt"
-    t.string "earthquake"
-    t.string "flamethrower"
+    
+    # t.string "thunderbolt"
+    # t.string "earthquake"
+    # t.string "flamethrower"
   end
 
   create_table "enemies", force: :cascade do |t|
     t.string "name"
     t.integer "hp"
-    t.string "thunderbolt"
-    t.string "earthquake"
-    t.string "flamethrower"
+
+    # t.string "thunderbolt"
+    # t.string "earthquake"
+    # t.string "flamethrower"
+
     t.integer "damage"
+    t.integer "counter"
+  end
+
+  create_table "players", force: :cascade do |t|
+    t.string "name"
+
+    t.integer "character_id"
+    t.integer "enemy_id"
   end
 
 end

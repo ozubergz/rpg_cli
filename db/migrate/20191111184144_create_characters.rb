@@ -1,8 +1,4 @@
 class CreateCharacters < ActiveRecord::Migration[5.2]
-  def down
-   remove_column 
-  end
-  
   def change
     create_table :characters do |t|
       t.string :name

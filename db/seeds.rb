@@ -1,9 +1,12 @@
+Enemy.destroy_all
+
 enemy1 = Enemy.create({
     name: "Beholder",
     damage: 3,
     thunderbolt: "thunderbolt",
     earthquake: "earthquake",
-    flamethrower: "flamethrower"
+    flamethrower: "flamethrower",
+    counter: 1
 })
 
 enemy2 = Enemy.create({
@@ -11,13 +14,15 @@ enemy2 = Enemy.create({
     damage: 5,
     thunderbolt: "thunderbolt",
     earthquake: "earthquake",
-    flamethrower: "flamethrower"
-    })
+    flamethrower: "flamethrower",
+    counter: 2
+})
 
 enemy3 = Enemy.create({
     name: "Mind Flayer",
     damage: 10, 
     thunderbolt: "thunderbolt",
     earthquake: "earthquake",
-    flamethrower: "flamethrower"
+    flamethrower: "flamethrower",
+    counter: 3
 })
