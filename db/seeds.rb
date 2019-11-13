@@ -2,27 +2,30 @@ Enemy.destroy_all
 
 enemy1 = Enemy.create({
     name: "Beholder",
-    damage: 3,
-    thunderbolt: "thunderbolt",
-    earthquake: "earthquake",
-    flamethrower: "flamethrower",
-    counter: 1
+    hp: 5,
+    damage: 3
 })
 
 enemy2 = Enemy.create({
-    name: "The Stoned Giant", 
-    damage: 5,
-    thunderbolt: "thunderbolt",
-    earthquake: "earthquake",
-    flamethrower: "flamethrower",
-    counter: 2
+    name: "The Stoned Giant",
+    hp: 10,
+    damage: 5
 })
 
 enemy3 = Enemy.create({
     name: "Mind Flayer",
-    damage: 10, 
-    thunderbolt: "thunderbolt",
-    earthquake: "earthquake",
-    flamethrower: "flamethrower",
-    counter: 3
+    hp: 15,
+    damage: 7
+})
+
+enemy4 = Enemy.create({
+    name: "One Reborn",
+    hp: 23,
+    damage: 10
+})
+
+enemy5 = Enemy.create({
+    name: "Darkbeast Paarl",
+    hp: 30,
+    damage: 14
 })

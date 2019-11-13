@@ -1,205 +1,261 @@
-class RpgGame
 
-    attr_reader :character, :winner, :level, :count_win, :enemy
+class RpgGame
+    # :water #scissor
+    # :grass #rock
+    # :fire #paper
 
     def run
-        # puts path_1
-        # path2
-        # path3
-        # create_username
         intro_game
+        main_menu
+        enter_name
         create_character
         start_game
-        walk_path
-        
     end
     
     def intro_game
-        puts "Welcome to Escape From The Unholy Point."
-        # puts "Create you username."
+        puts <<-'EOF'
+        ,--,  ,.-.
+        ,                   \,       '-,-`,'-.' | ._
+       /|           \    ,   |\         }  )/  / `-,',
+       [ '          |\  /|   | |        /  \|  |/`  ,`
+       | |       ,.`  `,` `, | |  _,...(   (      _',
+        \  \  __ ,-` `  ,  , `/ |,'      Y     (   \_L\
+         \  \_\,``,   ` , ,  /  |         )         _,/
+         \  '  `  ,_ _`_,-,<._.<        /         /
+          ', `>.,`  `  `   ,., |_      |         /
+            \/`  `,   `   ,`  | /__,.-`    _,   `\
+        -,-..\  _  \  `  /  ,  / `._) _,-\`       \
+         \_,,.) /\    ` /  / ) (-,, ``    ,        |
+        ,` )  | \_\       '-`  |  `(               \
+       /  /```(   , --, ,' \   |`<`    ,            |
+      /  /_,--`\   <\  V /> ,` )<_/)  | \      _____)
+,-, ,`   `   (_,\ \    |   /) / __/  /   `----`
+(-, \           ) \ ('_.-._)/ /,`    /
+| /  `          `/ \\ V   V, /`     /
+,--\(        ,     <_/`\\     ||      /
+(   ,``-     \/|         \-A.A-`|     /
+,>,_ )_,..(    )\          -,,_-`  _--`
+(_ \|`   _,/_  /  \_            ,--`
+\( `   <.,../`     `-.._   _,-`
+`                      ```               
+EOF
+
+
+        pid = fork{ exec "afplay", "musics/188_Barovian_Village.mp3" } 
     end
 
-    # def create_username
-    #     username = gets.chomp
-    #     @player = Player.create(name: username)
-    # end
+    def enter_name
+        puts "Enter your name."
+        username = gets.chomp
+        @player = Player.create(name: username)
+    end
 
     def create_character
         puts "Name your character to begin."
         name = gets.chomp
-        @character = Character.new(
-            name: name,
-            hp: 10
-        )
-        # @character = character
+        @character = Character.create(name: name, hp: 10, damage: 5)
+        @player.character_id = @character.id
+        @player.save
+        @original_hp = @character.hp
     end
 
     def start_game
         puts "Press any key to start game"
         @level = 1
-        @count_win = 0
+        @enemy = Enemy.all[@level - 1]
         STDIN.getch
-    end
+        puts "
+        ===================================================
 
-    def walk_path
-        puts "Press any key to continue along the path"
-        STDIN.getch
-        enemy_encounter?(roll_dice)
-    end
+                Level #{@level}. #{@enemy.name}.
 
-    def roll_dice
-        rand(1..7)
+        ===================================================
+        ".colorize(:yellow)
+        fight(player_move, enemy_move)
     end
-
-    def enemy_encounter?(num)
-        prob1 = [1, 2, 3]
-        prob2 = [4, 5, 7]
-        
-        arr = [prob1, prob2].sample
-        if (arr.include?(num))
-            puts "You have encounter an enemy"
-            if(@level == 1)
-                @enemy = Enemy.all[0]
-                check_winner(player_move, enemy_move)
-            elsif (@level == 2)
-                @enemy = Enemy.all[1]
-                check_winner(player_move, enemy_move)
-            elsif (@level == 3)
-                @enemy = Enemy.all[2]
-                check_winner(player_move, enemy_move)
-            end
-        else
-            puts "You did not encounter any enemy"
-            walk_path
-        end
-    end
-    
 
     def enemy_move
         random_num = rand(1..9)
-        move = 'Earthquake' if random_num <= 3
-        move = 'Flamethrower' if random_num.between?(4,6)
-        move = 'Thunderbolt' if random_num.between?(7,9)
+        move = 'water' if random_num <= 3
+        move = 'grass' if random_num.between?(4,6)
+        move = 'fire' if random_num.between?(7,9)
         move
     end
 
     def player_move
-        puts "Choose your magic. Will you melt your opponent into oblivion with
-            (1)flamethrower,destroy them with an 
-            (2)earthquake, or tear them apart with a powerful
-            (3)thunderbolt? Be prepared to face the consequences and enter your magics number"
+        $prompt.select("Choose your destiny?", %w(fire grass water))
+    end
 
-        magic = ["Flamethrower", "Earthquake", "Thunderbolt"]
-        choice = gets.chomp
-        num = choice.to_i
-        index = num -1
-        magic[index]
+    def fight(player1, player2)
+        
+        fight_result = "win" if player1 == 'water' && player2 == 'fire'
+        fight_result = "win" if player1 == 'grass' && player2 == 'water'
+        fight_result = "win" if player1 == 'fire' && player2 == 'grass'
+
+        fight_result = "lose" if player2 == 'water' && player1 == 'fire'
+        fight_result = "lose" if player2 == 'grass' && player1 == 'water'
+        fight_result = "lose" if player2 == 'fire' && player1 == 'grass'
+
+        fight_result = "tie" if player1 == 'water' && player2 == 'water'
+        fight_result = "tie" if player1 == 'grass' && player2 == 'grass'
+        fight_result = "tie" if player1 == 'fire' && player2 == 'fire'
+        
+        check_win(fight_result)
+    end
+
+    def check_win(result)
+        if(result == "win")
+            damage_enemy
+        elsif(result == "lose")
+            damage_character
+        elsif(result == 'tie')
+            puts "It's tie!. No damage has occured."
+            fight(player_move, enemy_move)
+        end
     end
     
-    def battle_wins(winner)
+    def damage_enemy
+        @enemy.hp -= @character.damage
         
+        puts "HIT! You have damaged the enemy. #{@enemy.name} HP level is #{@enemy.hp}."
+        puts "Your HP level is #{@character.hp}"
+        
+        if(@enemy.hp <= 0)
+            puts "
+            ----------------------------------------------
+            #{@enemy.name} have been defeated! You win!
+            ----------------------------------------------
+            ".colorize(:red)
+            @player.enemy_id = @enemy.id
+            @player.save
+            next_level
+        else
+            fight(player_move, enemy_move)
+        end
+    end
 
-        if(winner == "You win!")
-            @count_win += 1
+    def damage_character
+
+        @character.hp -= @enemy.damage
+
+        puts "You have been damaged. #{@enemy.name} HP level is #{@enemy.hp}."
+        puts "Your HP level is #{@character.hp}"
+
+        if(@character.hp <= 0)
+            puts game_over
+        else
+            fight(player_move, enemy_move)
+        end
+    end
+
+    def next_level
+        @level += 1
+        @enemy = Enemy.all[@level - 1]
+        if(@level > 5)
+            win_game
+        else
+            increase_stats
+            continue
+        end
+    end
+
+    def increase_stats
+        health = @original_hp += 2
+        @character.hp = health
+        @character.damage += 1
+
+        puts "
+        ******************************
+        You LEVEL UP.
+        HP increased by 2
+        Damage Points increased by 1
+        ******************************
+        ".colorize(:yellow)
+    end
+
+    def continue
+        puts "Press any key to continue on to the next level."
+        STDIN.getch
+
+        puts "
+        ===================================================
+
+                Level #{@level}. #{@enemy.name}.
+
+        ===================================================
+        ".colorize(:yellow)
+
+        fight(player_move, enemy_move)
+    end
+
+    def win_game
+        puts "
+        ================================================
+
+        CONGRATULATIONS! YOU'VE ESCAPE THE UNHOLY POINT!
+
+        ================================================
+        ".colorize(:yellow)
+        pid = fork{ exec "killall", "afplay" }
+    end
+
+    def game_over
+        puts "
+        +++++++++++++++++++++++++
+        YOU HAVE DIED! GAME OVER!
+        +++++++++++++++++++++++++
+        ".colorize(:red)
+        pid = fork{ exec "killall", "afplay" }
+    end
+
+    def main_menu
+        prompts = $prompt.select("What would you like to do?", %w(PlayGame PlayerRecords))
+        puts prompts
+        if prompts == "PlayGame"
+            start_game
+        else 
+            player_records
+        end
+    end
+
+    def player_records
+        record = []
+
+        Player.all.each do |player|
+            Character.all.each do |character|
+                Enemy.all.each do |enemy|
+                    if(player.character_id == character.id && player.enemy_id == enemy.id)
+                        record << "Player: #{player.name}, id: #{player.id} Character: #{character.name} Highest level: #{enemy.id}"
+                    end
+                end
+            end
         end
 
-        if(@count_win == enemy.counter)
-            walk_path
+        record.each do |item|
+            item
         end
-
-        puts @count_win
-        check_winner(player_move, enemy_move)
         
-        # if count == 3
-        #     walk_path
-        # else
-        #     puts winner
-        #     check_winner(player_move, enemy_move)
-        # end
+        record_selected = $prompt.select("Delete a record?", record)
+
+        #The following code must delete the record index selected by the player
+
+        rec = record_selected.match(/\d+/)[0]
+
+        rec.to_i
+
+        Player.find(rec).destroy
     end
 
-    
-    def check_winner(player1_move, player2_move)
-        
-        @winner = "You win!" if player1_move == 'Earthquake' && player2_move == 'Thunderbolt'
-        @winner = "You win!" if player1_move == 'Thunderbolt' && player2_move == 'Flamethrower'
-        @winner = "You win!" if player1_move == 'Flamethrower' && player2_move == 'Earthquake'
-        @winner = "You lose!" if player2_move == 'Earthquake' && player1_move == 'Thunderbolt'
-        @winner = "You lose!" if player2_move == 'Thunderbolt' && player1_move == 'Flamethrower'
-        @winner = "You lose!" if player2_move == 'Flamethrower' && player1_move == 'Earthquake'
-        @winner = "Nobody" if player1_move == 'Earthquake' && player2_move == 'Earthquake'
-        @winner = "Nobody" if player1_move == 'Thunderbolt' && player2_move == 'Thunderbolt'
-        @winner = "Nobody" if player1_move == 'Flamethrower' && player2_move == 'Flamethrower'
+end #end of RpgGame
 
-        battle_wins(@winner)
-        
-        # break if @winner == "You win!"
-        
-        
-        # puts @winner
-        
-        
-        # if(@winner == "You Win")
-        #     @count_win += 1
-        # else
-        #     check_winner(player1_move, player2_move)
-        # end
-        
-        # if(@count_win == @enemy.counter)
-        #     puts "You're at level #{@level}"
-        #     @level += 1
-        #     walk_path
-        # end
-    
-        
-    end
-
-    # def enemy_impact
-    #     Enemy.all.map do |enemies|
-    #         enemies
-    #     end
-    # end
-
-    # def enemy_1
-    #     Enemy.all[0]
-    # end
-
-    # def enemy_2
-    #     Enemy.all[1]
-    # end
-
-    # def enemy_3
-    #     Enemy.all[2]
-    # end
-
-end
-
-#[ ]Player should go to path 1 and encounter path 1 enemy. 
-
-#-If player defeats enemy, then player HP + 2, and program
-#goes back to the walk path method
-
-#-If player loses to enemy, then player HP - 3, and program goes back to walk path method
-
-#-If its a draw, enemy battle reoccurs until there is a winner
-
-#[ ]If player has already gone down path 1 and defeated enemy 1, player should now go down path 2 and encounter enemy 2.
-
-#-If player defeats enemy, then player HP + 4, and program
-#goes back to the walk path method
-
-#-If player loses to enemy, then player HP - 5, and program goes back to walk path method
-
-#-If its a draw, enemy battle reoccurs until there is a winner
+#Return player name with
+#1. Name 
+#2. Level
+#3. HP
 
 
-#[ ]If player has already gone down path 2 and defeated enemy 2, player should now go down path 3 and encounter enemy 3.
 
-#-If player defeats enemy, then player wins game.
 
-#-If player loses to enemy, then player HP - 7, and program goes back to walk path method
-
-#-If its a draw, enemy battle reoccurs until there is a winner
 
 
 
