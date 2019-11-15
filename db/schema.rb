@@ -22,6 +22,7 @@ ActiveRecord::Schema.define(version: 2019_11_11_191142) do
     t.string "name"
     t.integer "hp"
     t.integer "damage"
+    t.text "description"
   end
 
   create_table "players", force: :cascade do |t|

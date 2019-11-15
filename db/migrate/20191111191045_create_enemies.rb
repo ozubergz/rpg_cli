@@ -4,6 +4,7 @@ class CreateEnemies < ActiveRecord::Migration[5.2]
         t.string :name
         t.integer :hp     
         t.integer :damage #damage on char hp
+        t.text :description
     end
   end
 end

@@ -11,7 +11,7 @@ class RpgGame
     
     def intro_game
         puts <<-'EOF'
-        ,--,  ,.-.
+
         ,                   \,       '-,-`,'-.' | ._
        /|           \    ,   |\         }  )/  / `-,',
        [ '          |\  /|   | |        /  \|  |/`  ,`
@@ -29,16 +29,20 @@ class RpgGame
 ,-, ,`   `   (_,\ \    |   /) / __/  /   `----`
 (-, \           ) \ ('_.-._)/ /,`    /
 | /  `          `/ \\ V   V, /`     /
-,--\(        ,     <_/`\\     ||      /
-(   ,``-     \/|         \-A.A-`|     /
-,>,_ )_,..(    )\          -,,_-`  _--`
+,--\(        ,   <_/`\\     ||      /
+(   ,``-     \/|      \-A.A-`|     /
+,>,_ )_,..(    )\       -,,_-`  _--`
 (_ \|`   _,/_  /  \_            ,--`
 \( `   <.,../`     `-.._   _,-`
 `                      ```     
-Welcome to The Unholy Point brave soul. This land is home to dark forces you've yet to encounter. While
-they are powerful and sinister, you too have magic on your side. As you encounter these mythical soldiers of the dark lord,
-you will either fall to your knees or emerge stronger with more HP and stronger attacks. Engage in battle until a winner 
-emerges, and then move foward to advance. If you lose, you may start your jouney again.          
+
+Welcome to The Unholy Point brave soul. This land is home to dark forces you've yet
+to encounter. While they are powerful and sinister, you too have magic on your side.
+As you encounter these mythical soldiers of the dark lord, you will either fall to
+your knees or emerge stronger with more HP and stronger attacks. Engage in battle
+until a winner emerges, and then move foward to advance. If you lose, you may start
+your jouney again.
+
 EOF
 
         pid = fork{ exec "afplay", "musics/188_Barovian_Village.mp3" } 
@@ -77,14 +81,19 @@ EOF
         @level = 1
         @enemy = Enemy.all[@level - 1]
         @player.enemy_id = @enemy.id
+        @player.save
        
-        puts "
-        ===================================================
+        puts <<-TERMINATOR
 
-        Level #{@level}. #{@enemy.name}.
+        ==========================================================
 
-        ===================================================
-        ".colorize(:yellow)
+                Level #{@level}. Fight against #{@enemy.name}.
+
+                #{@enemy.description}
+
+        ==========================================================
+
+        TERMINATOR
 
         fight(player_move, enemy_move)
     end
@@ -159,7 +168,7 @@ EOF
     end
 
     def next_level
-        if(@level > 5)
+        if(@level >= 5)
             win_game
         else
             increase_stats
@@ -192,13 +201,17 @@ EOF
         puts "Press any key to continue on to the next level."
         STDIN.getch
 
-        puts "
-        ===================================================
+        puts <<-TERMINATOR
 
-        Level #{@level}. #{@enemy.name}.
+        ==========================================================
 
-        ===================================================
-        ".colorize(:yellow)
+                Level #{@level}. #{@enemy.name}.
+
+                #{@enemy.description}
+
+        ==========================================================
+
+        TERMINATOR
 
         fight(player_move, enemy_move)
     end
@@ -212,7 +225,7 @@ EOF
         ================================================
         ".colorize(:yellow)
 
-        pid = fork{ exec "killall", "afplay" }
+        restart
     end
 
     def game_over
@@ -239,7 +252,7 @@ EOF
             else
                 restart
             end
-        end           
+        end
     end
 
     def main_menu
